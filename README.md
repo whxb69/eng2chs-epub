@@ -1,5 +1,4 @@
 # eng2chs-epub
-translate english epub to chinese 
 将epub电子书格式进行拆解<br>
 利用Chrome浏览器的翻译插件(谷歌翻译)翻译epub格式电子书的内容<br>
 go.py为主函数 其他为数据抓取和格式文件格式调整函数<br>
