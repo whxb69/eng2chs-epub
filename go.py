@@ -6,40 +6,48 @@ import time
 from html2xhtml import toxhtml
 import shutil
 from backtofuture import backtoepub
-from getready import format
+from getready import format_
 
 epubfile = ['E:rucker-postsingular.epub']
 
+#遍历epub列表
 for epub in epubfile:
     filename = os.path.splitext(epub)[0]
-    format(epub)
+    #调用getready中函数 
+    format_(epub)
 
-    rootdir = filename + '\\' + 'OEBPS'
+    rootdir = filename + '\\' + 'OEBPS'     #主要操作目录
     print(rootdir)
     temp = rootdir.split('\\')
     print(temp)
-    list = os.listdir(rootdir) #列出文件夹下所有的目录与文件
-    urls = []       #待操作文件列表
-    for i in range(0,len(list)):
-        path = os.path.join(rootdir,list[i])
+    flist = os.listdir(rootdir) #列出文件夹下所有的目录与文件
+    urls = []       #待操作xhtml文件列表
+    for i in range(0,len(flist)):
+        path = os.path.join(rootdir,flist[i])
         # print(path)
-        if os.path.isfile(path) and path[-6:] == '.xhtml':
+        if os.path.isfile(path) and os.path.splitext(path)[1] == '.xhtml':
             # os.renames(path,path[:-6] + '.html')
             urls.append(path)
 
     names = {}
+    #win32api字典 
     keyboard = {'0':0x30,'1':0x31,'2':0x32,
                 '3':0x33,'4':0x34,'5':0x35,
                 '6':0x36,'7':0x37,'8':0x38,'9':0x39}
 
     for (j,url) in enumerate(urls):
-        os.renames(url, url[:-6] + '.html')
+        #文件名统一改为标号 并将原名记入字典
+        newname = os.path.splitext(url)[0] + '.html'
+        os.renames(url, newname)
         name = url.split('\\')[-1]
         names[j] = name
+        
+        #模拟浏览器打开待翻译文件
         browser = webdriver.Chrome()
         browser.maximize_window()
-        browser.get(url[:-6] + '.html')
-
+        browser.get(newname)
+        
+        #调用win32api进行鼠标键盘操作
         win32api.SetCursorPos([1000, 150])
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP | win32con.MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0)     #右键菜单
         time.sleep(1)
@@ -102,16 +110,17 @@ for epub in epubfile:
         print(names)
         oldfile = rootdir + '\\' + names[int(cur_name)]
         print(oldfile,type(oldfile))
-        oldfile = str(oldfile).split('.')[0] + '.html'
+        oldfile = os.path.splitext(str(oldfile))[0] + '.html'
 
         os.remove(oldfile)
-        newname = basedir + rootdir.split('\\')[-1] + '\\' + names[int(cur_name)][:-5]
+        newname = basedir + rootdir.split('\\')[-1] + '\\' + os.path.splitext(names[int(cur_name)])[0]
         isExists = os.path.exists(basedir + rootdir.split('\\')[-1])
-        # 判断结果
+        # 判断结果 目标文件夹是否存在
         if not isExists:
             os.makedirs(basedir + rootdir.split('\\')[-1])
 
         print(cur_name)
+        #将html转回xhtml
         try:
             text = toxhtml(basedir + cur_name + '.html')
         # 解决未知bug chrome浏览器保存网页后可能不存在该文件
@@ -119,19 +128,21 @@ for epub in epubfile:
             sparedir = basedir + cur_name + '_files' + '\\' + 'saved_resource.html'
             text = toxhtml(sparedir)
 
-        filename = rootdir + '\\' + names[int(cur_name)][:-5] + 'xhtml'
+        #使用原文件名保存xhtml文件
+        filename = rootdir + '\\' + os.path.splitext(names[int(cur_name)])[0] + '.xhtml'
         with open(filename, 'w', encoding="utf-8") as f:
             try:
                 f.write(text)
             except:
                 f.write(text.decode('utf-8'))
 
+        #统一转移文件目录
         olddir = basedir + cur_name + '_files'
         newdir = rootdir + '\\' + cur_name + '_files'
         if os.path.exists(olddir):
             shutil.copytree(olddir, newdir)
         browser.close()
-
+    #重新打包zip
     backtoepub(rootdir[:-6])
 print('完成！')
 

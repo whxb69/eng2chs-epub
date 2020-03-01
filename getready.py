@@ -1,7 +1,7 @@
 import os
 import shutil
-def format(file):
-    #清楚E盘遗留文件
+def format_(filename):
+    #清除工作目录遗留文件（失败残留或临时文件）
     mime = 'E:mimetype'
     if os.path.exists(mime):
         os.remove(mime)
@@ -36,16 +36,17 @@ def format(file):
 
 
 
-    fileformat = os.path.splitext(file)[1]
-    filename = os.path.splitext(file)[0]
+    fileformat = os.path.splitext(filename)[1]
+    filename = os.path.splitext(filename)[0]
     newfile = filename + '.zip'
+    #epub复制生成zip文件
     if fileformat == '.epub':
-        shutil.copyfile(file, newfile)
+        shutil.copyfile(filename, newfile)
     else:
         print('文件格式错误')
-
+    #zip解压然后删除zip
     shutil.unpack_archive(newfile,filename)
-    os.remove(file)
+    os.remove(filename)#这句可能有问题 remove文件夹会报OSError
     if os.path.exists(newfile):
         os.remove(newfile)
     print('准备工作完成')

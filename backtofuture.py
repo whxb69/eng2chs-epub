@@ -1,16 +1,18 @@
 import zipfile, os
 import shutil
 
+#遍历目录 将文件加入列表
 def get_zip_file(input_path,result):
     # print(input_path)
     files = os.listdir(input_path)
-    for file in files:
-        if os.path.isdir(input_path + '/' + file):
-            get_zip_file(input_path + '/' + file, result)
+    for file_ in files:
+        if os.path.isdir(input_path + '/' + file_):
+            get_zip_file(input_path + '/' + file_, result)
         else:
-            result.append(input_path + '/' + file)
+            result.append(input_path + '/' + file_)
     return result
 
+#打包全部文件
 def zip_path(oebps_path, meta_path,output_path,output_name):
 
     # print(output_path + '\\' + output_name)
@@ -22,14 +24,15 @@ def zip_path(oebps_path, meta_path,output_path,output_name):
     files = files1 + files2
     files.append('E:/mimetype')
     print(files)
-    for file in files:
+    for file_ in files:
         # print(file)
-        f.write(file)
+        f.write(file_)
     f.close()
     epub = output_path+r"/"+output_name
     return epub
 
 def backtoepub(rootdir):
+    #移动文件
     oldoebps = rootdir + '\\' + 'OEBPS'
     newoebps = 'E:/' + 'OEBPS'
     shutil.copytree(oldoebps, newoebps)
